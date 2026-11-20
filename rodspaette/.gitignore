@@ -1,0 +1,6 @@
+bin/
+obj/
+publish/
+tests/out/
+*.user
+.vs/

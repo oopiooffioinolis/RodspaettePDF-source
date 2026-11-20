@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Rodspaette.App</RootNamespace>
+    <AssemblyName>RodspaettePDF</AssemblyName>
+    <Product>Rødspætte PDF</Product>
+    <AssemblyTitle>Rødspætte PDF</AssemblyTitle>
+    <!-- shown as "1.01": bump by 0.01 with every feature update -->
+    <Version>2.3.0</Version>
+    <InformationalVersion>2.03</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PlatformTarget>x64</PlatformTarget>
+    <TieredPGO>true</TieredPGO>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rodspaette.Core\Rodspaette.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Look up (Google AI Mode) runs in WebView2, the Edge engine that comes with Windows (its composition control, so the panel can fade) -->
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\native\win-x64\pdfium.dll" Link="pdfium.dll" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets\logo128.png" />
+    <Resource Include="Assets\logo64.png" />
+    <Resource Include="Assets\logo512.png" />
+    <Resource Include="Assets\app.ico" />
+    <Resource Include="Assets\Fonts\RodspaetteScript-Regular.ttf" />
+    <Resource Include="Assets\Fonts\RodspaetteScript-Bold.ttf" />
+    <Resource Include="Assets\splash-body.png" />
+    <Resource Include="Assets\splash-eyes.png" />
+    <Resource Include="Assets\lost-body.png" />
+    <Resource Include="Assets\lost-eyes.png" />
+  </ItemGroup>
+
+</Project>

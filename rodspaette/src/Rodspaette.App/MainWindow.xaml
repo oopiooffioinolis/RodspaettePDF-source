@@ -1,0 +1,576 @@
+<Window x:Class="Rodspaette.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Rodspaette.App"
+        Title="Rødspætte PDF" Width="1280" Height="860" MinWidth="760" MinHeight="480"
+        Background="{DynamicResource B.Win}" Foreground="{DynamicResource B.Text}"
+        FontFamily="{StaticResource UiFont}" FontSize="13"
+        WindowStyle="None" ResizeMode="CanResize" AllowDrop="True" UseLayoutRounding="True"
+        Icon="Assets/app.ico">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="48" ResizeBorderThickness="6" GlassFrameThickness="0"
+                      CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="TitleRow" Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ================================================================ title bar -->
+        <Border x:Name="TitleBar" Grid.Row="0" Background="{DynamicResource B.Bar}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ToggleButton x:Name="HomeToggle" Grid.Column="0" Margin="8,0,0,0" Style="{StaticResource IconToggle}" ToolTip="Home" Click="HomeToggle_Click" IsChecked="True">
+                    <local:IconView Data="M4 11l8-7 8 7 M6 9.5V20h12V9.5 M10 20v-5h4v5"/>
+                </ToggleButton>
+
+                <TextBlock x:Name="DocTitle" Grid.Column="1" Margin="8,0,0,0" Text="Rødspætte PDF" FontWeight="SemiBold" FontSize="13.5" MaxWidth="460"
+                           TextTrimming="CharacterEllipsis" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"/>
+
+                <StackPanel x:Name="EditedLabel" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0" Visibility="Collapsed">
+                    <Ellipse Width="6" Height="6" Fill="{DynamicResource B.Danger}" Margin="0,0,6,0"/>
+                    <TextBlock Text="Edited" FontSize="12" Foreground="{DynamicResource B.Muted}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- shown while Windows says there is no internet (Look up then shows "Connection Lost") -->
+                    <Border x:Name="OfflineIndicator" Width="34" Height="32" Background="Transparent" Margin="0,0,2,0" ToolTip="No internet connection" Visibility="Collapsed">
+                        <local:IconView Data="M2.5 10.5A13.5 13.5 0 0 1 21.5 10.5 M5.6 13.6A9 9 0 0 1 18.4 13.6 M8.8 16.8A4.5 4.5 0 0 1 15.2 16.8 M12 20h.01 M4 4l16 16" IconBrush="{DynamicResource B.Text}"/>
+                    </Border>
+                    <Button x:Name="SearchButton" Style="{StaticResource IconButton}" ToolTip="Search" local:Hint.Tip="search" Click="SearchButton_Click">
+                        <local:IconView Data="M17.5 11a6.5 6.5 0 1 1-13 0a6.5 6.5 0 1 1 13 0z M16 16l4.5 4.5"/>
+                    </Button>
+                    <Button x:Name="SettingsButton" Style="{StaticResource IconButton}" ToolTip="Settings" Click="SettingsButton_Click">
+                        <local:IconView Data="M12 9a3 3 0 1 1 0 6a3 3 0 1 1 0-6z M12 2.8l1.6 2.4 2.8-.7.6 2.8 2.6 1.3-1.2 2.6 1.2 2.6-2.6 1.3-.6 2.8-2.8-.7L12 21.2l-1.6-2.4-2.8.7-.6-2.8-2.6-1.3 1.2-2.6-1.2-2.6 2.6-1.3.6-2.8 2.8.7z"/>
+                    </Button>
+                    <Button x:Name="AppearanceButton" Style="{StaticResource IconButton}" ToolTip="Appearance" Click="AppearanceButton_Click">
+                        <local:IconView Data="M20 12a8 8 0 1 1-16 0a8 8 0 1 1 16 0z" FillData="M12 4a8 8 0 0 1 0 16z"/>
+                    </Button>
+                    <Button x:Name="PrintButton" Style="{StaticResource IconButton}" ToolTip="Print" local:Hint.Tip="print" Click="PrintButton_Click">
+                        <local:IconView Data="M7 9V4h10v5 M5.5 9h13a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z M8 14h8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1z"/>
+                    </Button>
+                    <Button x:Name="FileMenuButton" Style="{StaticResource IconButton}" ToolTip="File" Click="FileMenu_Click">
+                        <local:IconView Data="M4 6.5h16 M4 12h16 M4 17.5h8"/>
+                    </Button>
+                    <Button x:Name="SaveButton" Style="{StaticResource AccentButton}" Content="Save" Margin="8,0,1,0" Click="SaveButton_Click" ToolTip="Save" local:Hint.Tip="save"/>
+                    <Button x:Name="SaveMenuButton" Style="{StaticResource AccentButton}" Padding="7,0" Margin="0,0,8,0" Click="SaveMenuButton_Click" ToolTip="Save options">
+                        <local:IconView Data="M7 10l5 5 5-5" Width="14" Height="14" StrokeWidth="2.2"/>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+                    <Button Style="{StaticResource CaptionButton}" Click="Minimize_Click" ToolTip="Minimise">
+                        <local:IconView Data="M5 12h14" Width="14" Height="14" StrokeWidth="1.5"/>
+                    </Button>
+                    <Button x:Name="MaxButton" Style="{StaticResource CaptionButton}" Click="Maximize_Click" ToolTip="Maximise">
+                        <local:IconView x:Name="MaxIcon" Data="M7 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" Width="14" Height="14" StrokeWidth="1.5"/>
+                    </Button>
+                    <Button Style="{StaticResource CloseCaptionButton}" Click="Close_Click" ToolTip="Close">
+                        <local:IconView Data="M6 6l12 12 M18 6L6 18" Width="14" Height="14" StrokeWidth="1.5"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- title menu -->
+                <Popup x:Name="TitleMenu" PlacementTarget="{Binding ElementName=FileMenuButton}" Placement="Bottom"
+                       StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource MenuCard}">
+                        <StackPanel>
+                            <Button x:Name="MenuSaveItem" Style="{StaticResource MenuItemButton}" Click="Menu_Save"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="save" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Save"/></DockPanel></Button>
+                            <Button x:Name="MenuSaveAsItem" Style="{StaticResource MenuItemButton}" Click="Menu_SaveAs"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="saveas" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Save As…"/></DockPanel></Button>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <Button x:Name="MenuPrintItem" Style="{StaticResource MenuItemButton}" Click="Menu_Print"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="print" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Print…"/></DockPanel></Button>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <Button Style="{StaticResource MenuItemButton}" Click="Menu_Open"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="open" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Open…"/></DockPanel></Button>
+                            <Button x:Name="MenuRenameItem" Style="{StaticResource MenuItemButton}" Click="Menu_Rename"><TextBlock Text="Rename…"/></Button>
+                            <Button x:Name="MenuFolderItem" Style="{StaticResource MenuItemButton}" Click="Menu_ShowInFolder"><TextBlock Text="Show in folder"/></Button>
+                            <Button x:Name="MenuPageNumbersItem" Style="{StaticResource MenuItemButton}" Click="Menu_PageNumbers"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="pagenumbers" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Page numbers…"/></DockPanel></Button>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <Button x:Name="MenuCloseItem" Style="{StaticResource MenuItemButton}" Click="Menu_CloseTab"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="closetab" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Close tab"/></DockPanel></Button>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+
+                <!-- settings -->
+                <Popup x:Name="SettingsMenu" PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Bottom" HorizontalOffset="-110"
+                       StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource MenuCard}">
+                        <StackPanel MinWidth="270">
+                            <Button Style="{StaticResource MenuItemButton}" Click="MouseMenuSettings_Click"><TextBlock Text="Function dial…"/></Button>
+                            <Button Style="{StaticResource MenuItemButton}" Click="MouseBehaviour_Click"><TextBlock Text="Mouse behaviour…"/></Button>
+                            <Button Style="{StaticResource MenuItemButton}" Click="ShortcutsSettings_Click"><TextBlock Text="Shortcuts…"/></Button>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <DockPanel Margin="12,6,8,6">
+                                <ToggleButton x:Name="SettingsRestoreSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="SettingsRestore_Click"/>
+                                <TextBlock Text="Open where I left off" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource B.Text}"/>
+                            </DockPanel>
+                            <DockPanel Margin="12,6,8,6">
+                                <ToggleButton x:Name="SettingsGlassSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" VerticalAlignment="Center" Click="SettingsGlass_Click"/>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="Tool bar transparency" FontSize="13" Foreground="{DynamicResource B.Text}"/>
+                                    <TextBlock Text="The tool bar and Look up fade a little while the mouse is away" FontSize="11.5" TextWrapping="Wrap" MaxWidth="210" Margin="0,2,0,0" Foreground="{DynamicResource B.Muted}"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <DockPanel Margin="12,6,8,6">
+                                <ToggleButton x:Name="SettingsUndockSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" VerticalAlignment="Center" Click="SettingsUndock_Click"/>
+                                <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                                    <TextBlock Text="Undocked mode" FontSize="13" Foreground="{DynamicResource B.Text}"/>
+                                    <TextBlock Text="Look up opens beside the mouse. Drag its top rim to move it, its edges to resize it" FontSize="11.5" TextWrapping="Wrap" MaxWidth="210" Margin="0,2,0,0" Foreground="{DynamicResource B.Muted}"/>
+                                </StackPanel>
+                            </DockPanel>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <Button x:Name="SettingsUpdateItem" Style="{StaticResource MenuItemButton}" Click="SettingsUpdate_Click"><TextBlock x:Name="SettingsUpdateText" Text="Update app"/></Button>
+                            <TextBlock x:Name="SettingsVersion" Margin="12,2,12,6" FontSize="12" Foreground="{DynamicResource B.Muted}"/>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+
+                <!-- save options -->
+                <Popup x:Name="SaveMenu" PlacementTarget="{Binding ElementName=SaveMenuButton}" Placement="Bottom" HorizontalOffset="-200"
+                       StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource MenuCard}">
+                        <StackPanel MinWidth="240">
+                            <DockPanel Margin="12,6,8,6">
+                                <ToggleButton x:Name="AutoSaveSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="AutoSave_Click"/>
+                                <TextBlock Text="Autosave" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource B.Text}"/>
+                            </DockPanel>
+                            <Border Height="1" Margin="8,5" Background="{DynamicResource B.Hair}"/>
+                            <Button Style="{StaticResource MenuItemButton}" Click="Menu_SaveAs"><DockPanel><TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="saveas" Foreground="{DynamicResource B.Muted}"/><TextBlock Text="Save As…"/></DockPanel></Button>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+
+                <!-- appearance -->
+                <Popup x:Name="AppearancePopup" PlacementTarget="{Binding ElementName=AppearanceButton}" Placement="Bottom" HorizontalOffset="-140"
+                       StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource MenuCard}" Padding="14" Width="320">
+                        <StackPanel>
+                            <TextBlock Text="Appearance" FontWeight="SemiBold" Margin="0,0,0,12" Foreground="{DynamicResource B.Text}"/>
+                            <UniformGrid Columns="3">
+                                <RadioButton x:Name="ThemeLight" GroupName="theme" Margin="0,0,6,0" Checked="Theme_Checked" Tag="Light" Style="{StaticResource SegButton}" Height="Auto" Padding="0">
+                                    <StackPanel>
+                                        <Border Height="52" CornerRadius="10" Background="White" BorderBrush="#22000000" BorderThickness="1">
+                                            <TextBlock Text="Aa" FontFamily="Georgia" FontSize="20" Foreground="#1D1D1F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Light" HorizontalAlignment="Center" Margin="0,6,0,4"/>
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton x:Name="ThemeDark" GroupName="theme" Margin="3,0,3,0" Checked="Theme_Checked" Tag="Dark" Style="{StaticResource SegButton}" Height="Auto" Padding="0">
+                                    <StackPanel>
+                                        <Border Height="52" CornerRadius="10" Background="#26262A" BorderBrush="#22000000" BorderThickness="1">
+                                            <TextBlock Text="Aa" FontFamily="Georgia" FontSize="20" Foreground="#E6E6EA" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Dark" HorizontalAlignment="Center" Margin="0,6,0,4"/>
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton x:Name="ThemeGreen" GroupName="theme" Margin="6,0,0,0" Checked="Theme_Checked" Tag="Green" Style="{StaticResource SegButton}" Height="Auto" Padding="0">
+                                    <StackPanel>
+                                        <Border Height="52" CornerRadius="10" Background="#C7EDCC" BorderBrush="#22000000" BorderThickness="1">
+                                            <TextBlock Text="Aa" FontFamily="Georgia" FontSize="20" Foreground="#1C2A1F" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Green" HorizontalAlignment="Center" Margin="0,6,0,4"/>
+                                    </StackPanel>
+                                </RadioButton>
+                            </UniformGrid>
+                            <Border Height="1" Margin="0,12" Background="{DynamicResource B.Hair}"/>
+                            <DockPanel>
+                                <ToggleButton x:Name="TintToggle" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="TintToggle_Click"/>
+                                <TextBlock Text="Tint PDF page" VerticalAlignment="Center" Foreground="{DynamicResource B.Text}"/>
+                            </DockPanel>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+            </Grid>
+        </Border>
+
+        <!-- ================================================================ body -->
+        <Grid x:Name="Body" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftCol" Width="334"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="RightCol" Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- ======================== viewer area -->
+            <Grid x:Name="ViewerHost" Grid.Column="1" Background="{DynamicResource B.Viewer}" ClipToBounds="True">
+                <!-- empty state -->
+                <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Image x:Name="StartLogo" Source="Assets/logo512.png" Width="220" Height="220" RenderOptions.BitmapScalingMode="HighQuality" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="StartTitle" FontSize="46" HorizontalAlignment="Center" Margin="0,10,0,2" Foreground="{DynamicResource B.Text}"><Run Text="Rødspætte " FontFamily="{StaticResource UiFont}" FontWeight="SemiBold"/><Run Text="PDF" FontFamily="{StaticResource LogoFont}" FontWeight="Bold"/></TextBlock>
+                    <!-- version: kept hidden (but laid out, so nothing moves) until the opening animation has gone -->
+                    <TextBlock x:Name="StartVersion" FontSize="13" HorizontalAlignment="Center" Margin="0,0,0,20" Foreground="{DynamicResource B.Muted}" Visibility="Hidden"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="HomeBackButton" Style="{StaticResource PlainButton}" Content="Back to document" Margin="0,0,8,0" Click="HomeBack_Click" Visibility="Collapsed"/>
+                        <Button Style="{StaticResource AccentButton}" Content="Open a PDF" Click="Menu_Open"/>
+                    </StackPanel>
+                    <ItemsControl x:Name="EmptyRecent" Margin="0,22,0,0" Width="360">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RowButton}" Click="Recent_Click" ToolTip="{Binding Path}">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding When}" Foreground="{DynamicResource B.Muted}" FontSize="12" Margin="10,0,0,0"/>
+                                        <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                                    </DockPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!-- hint toast -->
+                <Border x:Name="Toast" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,16,0,0" Padding="14,8" CornerRadius="10"
+                        Background="{DynamicResource B.MenuBg}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="1" Visibility="Collapsed" Panel.ZIndex="40" IsHitTestVisible="False">
+                    <TextBlock x:Name="ToastText" FontSize="12.5" Foreground="{DynamicResource B.Text}"/>
+                </Border>
+
+                <!-- ======================== bottom toolbar (always shown) -->
+                <Border x:Name="Toolbar" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,18" Padding="5"
+                        CornerRadius="16" Background="{DynamicResource B.Glass}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="1" Panel.ZIndex="30"
+                        MouseLeftButtonDown="Toolbar_MouseLeftButtonDown" MouseMove="Toolbar_MouseMove" MouseLeftButtonUp="Toolbar_MouseLeftButtonUp" LostMouseCapture="Toolbar_LostMouseCapture">
+                    <Border.RenderTransform>
+                        <TransformGroup>
+                            <TranslateTransform x:Name="ToolbarShift"/>
+                            <TranslateTransform x:Name="ToolbarDrop"/>
+                        </TransformGroup>
+                    </Border.RenderTransform>
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="22" ShadowDepth="5" Direction="270" Opacity="0.16"/>
+                    </Border.Effect>
+                    <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <!-- docked Look up: the tool bar grows by opening one of these rooms, and the page sits on top of it -->
+                    <Border x:Name="ToolbarRoomAbove" Height="0"/>
+                    <Border x:Name="ToolbarRoomBelow" Grid.Row="2" Height="0"/>
+                    <StackPanel x:Name="ToolbarButtons" Grid.Row="1" Orientation="Horizontal">
+                        <Button x:Name="HomeButton" Style="{StaticResource IconButton}" Width="40" Height="40" ToolTip="Move the toolbar back to the bottom" Click="HomeButton_Click">
+                            <local:IconView Data="M5 19h14"/>
+                        </Button>
+                        <ToggleButton x:Name="FullScreenToggle" Style="{StaticResource IconToggle}" Width="40" Height="40" ToolTip="Full screen" Click="FullScreenToggle_Click">
+                            <local:IconView Data="M4 9V5a1 1 0 0 1 1-1h4 M15 4h4a1 1 0 0 1 1 1v4 M20 15v4a1 1 0 0 1-1 1h-4 M9 20H5a1 1 0 0 1-1-1v-4"/>
+                        </ToggleButton>
+                        <!-- everything that acts on a document: folded away on the home page -->
+                        <StackPanel x:Name="ToolbarRest" Orientation="Horizontal" ClipToBounds="True">
+                        <Rectangle Width="1" Height="24" Fill="{DynamicResource B.Hair}" Margin="6,0"/>
+                        <RadioButton x:Name="ToolSelect" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Select" Checked="Tool_Checked" ToolTip="Select text" IsChecked="True">
+                            <local:IconView Data="M6 4l12 7-5.5 1.5L10 18z"/>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolHighlight" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Highlight" Checked="Tool_Checked" ToolTip="Highlight (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <StackPanel>
+                                <local:IconView Data="M15 4l5 5-8.5 8.5H7v-4.5z M7 13l4 4"/>
+                                <Rectangle x:Name="HighlightSwatch" Width="16" Height="3" RadiusX="1.5" RadiusY="1.5" Fill="#FFD60A" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolUnderline" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Underline" Checked="Tool_Checked" ToolTip="Underline (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <local:IconView Data="M7 4v6a5 5 0 0 0 10 0V4 M5 20h14"/>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolStrike" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Strike" Checked="Tool_Checked" ToolTip="Strikethrough (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <local:IconView Data="M16 6.5C15.3 5 13.9 4 12 4c-2.5 0-4 1.4-4 3.2 0 1.3.8 2.2 2.4 2.8 M4 12h16 M8 17.2C8.7 19 10.2 20 12.3 20c2.6 0 4.2-1.4 4.2-3.3 0-.9-.3-1.6-1-2.2"/>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolPen" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Pen" Checked="Tool_Checked" ToolTip="Freehand pen (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <local:IconView Data="M3 17c3-4 5-1 7-4s2-7 5-7 3 4 1 7-5 6-2 8 5-1 6-2"/>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolNote" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Note" Checked="Tool_Checked" ToolTip="Note (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <local:IconView Data="M5 4h14v11l-5 5H5z M14 20v-5h5"/>
+                        </RadioButton>
+                        <RadioButton x:Name="ToolText" GroupName="tool" Style="{StaticResource ToolToggle}" Tag="Text" Checked="Tool_Checked" ToolTip="Text box (right-click for colour)" MouseRightButtonUp="Tool_RightClick">
+                            <local:IconView Data="M6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11A2.5 2.5 0 0 1 6.5 4z M9 9h6 M12 9v7"/>
+                        </RadioButton>
+                        <Rectangle Width="1" Height="24" Fill="{DynamicResource B.Hair}" Margin="6,0"/>
+                        <Button Style="{StaticResource IconButton}" Width="40" Height="40" ToolTip="Undo" local:Hint.Tip="undo" Click="Undo_Click">
+                            <local:IconView Data="M9 5L4 10l5 5 M4 10h10.5a5 5 0 0 1 0 10H12"/>
+                        </Button>
+                        <Rectangle Width="1" Height="24" Fill="{DynamicResource B.Hair}" Margin="6,0"/>
+                        <Button Style="{StaticResource IconButton}" Width="34" Height="40" ToolTip="Zoom out" local:Hint.Tip="zoomout" Click="ZoomOut_Click">
+                            <local:IconView Data="M5 12h14" Width="16" Height="16"/>
+                        </Button>
+                        <Button x:Name="ZoomLabel" Style="{StaticResource TextButton}" Height="40" MinWidth="58" Padding="6,0" ToolTip="Fit width" Click="ZoomLabel_Click">
+                            <TextBlock x:Name="ZoomText" Text="100%" FontSize="12.5"/>
+                        </Button>
+                        <Button Style="{StaticResource IconButton}" Width="34" Height="40" ToolTip="Zoom in" local:Hint.Tip="zoomin" Click="ZoomIn_Click">
+                            <local:IconView Data="M12 5v14 M5 12h14" Width="16" Height="16"/>
+                        </Button>
+                        <Rectangle Width="1" Height="24" Fill="{DynamicResource B.Hair}" Margin="6,0"/>
+                        <TextBox x:Name="PageBox" Style="{StaticResource Field}" Width="46" Height="28" Padding="4,0" HorizontalContentAlignment="Center"
+                                 FontSize="12.5" Text="1" KeyDown="PageBox_KeyDown" GotKeyboardFocus="PageBox_GotFocus"/>
+                        <TextBlock x:Name="PageCountText" Text="/ 1" FontSize="12.5" VerticalAlignment="Center" Margin="6,0,4,0" Foreground="{DynamicResource B.Text2}"/>
+                        <!-- filled while the page in view is bookmarked; click to bookmark it or remove the bookmark -->
+                        <ToggleButton x:Name="PageBookmarkToggle" Style="{StaticResource IconToggle}" Width="36" Height="40" Margin="0,0,2,0" ToolTip="Bookmark this page" Click="BookmarkToggle_Click">
+                            <local:IconView x:Name="PageBookmarkIcon" Data="M7 4h10v16l-5-4-5 4z"/>
+                        </ToggleButton>
+                        </StackPanel>
+                    </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- tool colour picker -->
+                <Popup x:Name="ColorPopup" Placement="Top" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Style="{StaticResource MenuCard}" Padding="10">
+                        <ItemsControl x:Name="ColorList">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource IconButton}" Width="34" Height="34" Click="Color_Click" ToolTip="{Binding}">
+                                        <Ellipse Width="20" Height="20" Fill="{Binding}" Stroke="#33000000" StrokeThickness="1"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Popup>
+            </Grid>
+
+            <!-- ======================== left panel: Contents / Bookmarks / Markup / Search -->
+            <Border x:Name="LeftPanel" Grid.Column="0" Background="{DynamicResource B.Panel}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="0,0,1,0"
+                    MouseLeave="LeftPanel_MouseLeave" Panel.ZIndex="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- header: segmented tabs -->
+                    <Grid x:Name="SegHeader" Margin="12,12,10,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton x:Name="LeftPinToggle" Grid.Column="1" Style="{StaticResource IconToggle}" Width="30" Height="30" Margin="6,0,0,0"
+                                      ToolTip="Pin side panel" Click="LeftToggle_Click">
+                            <local:IconView Data="M9 4h6l-1 6 3 3H7l3-3z M12 13v7" Width="16" Height="16"/>
+                        </ToggleButton>
+                        <Border CornerRadius="9" Background="{DynamicResource B.Seg}" Padding="2">
+                            <UniformGrid Columns="3">
+                                <RadioButton x:Name="ViewContents" GroupName="leftview" Style="{StaticResource SegButton}" Content="Contents" Tag="contents" Checked="LeftView_Checked"/>
+                                <RadioButton x:Name="ViewBookmarks" GroupName="leftview" Style="{StaticResource SegButton}" Content="Bookmarks" Tag="bookmarks" Checked="LeftView_Checked"/>
+                                <RadioButton x:Name="ViewMarkup" GroupName="leftview" Style="{StaticResource SegButton}" Content="Markup" Tag="markup" Checked="LeftView_Checked"/>
+                            </UniformGrid>
+                        </Border>
+                    </Grid>
+
+                    <!-- header: search -->
+                    <StackPanel x:Name="SearchHeader" Margin="12,12,10,8" Visibility="Collapsed">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="30" Height="30" Margin="4,0,0,0" ToolTip="Close search (Esc)" Click="CloseSearch_Click">
+                                <local:IconView Data="M6 6l12 12 M18 6L6 18" Width="14" Height="14"/>
+                            </Button>
+                            <Grid>
+                                <TextBox x:Name="SearchBox" Style="{StaticResource Field}" Padding="30,0,8,0" KeyDown="SearchBox_KeyDown" TextChanged="SearchBox_TextChanged"/>
+                                <local:IconView Data="M17.5 11a6.5 6.5 0 1 1-13 0a6.5 6.5 0 1 1 13 0z M16 16l4.5 4.5" Width="15" Height="15" HorizontalAlignment="Left" Margin="10,0,0,0"
+                                                IsHitTestVisible="False" IconBrush="{DynamicResource B.Muted}"/>
+                            </Grid>
+                        </DockPanel>
+                        <DockPanel Margin="0,8,0,0">
+                            <ToggleButton x:Name="WholeWordToggle" DockPanel.Dock="Right" Style="{StaticResource TextToggle}" Height="26" Padding="8,0" FontSize="12" Content="Whole word" Click="SearchOption_Click" Margin="4,0,0,0"/>
+                            <ToggleButton x:Name="MatchCaseToggle" DockPanel.Dock="Right" Style="{StaticResource TextToggle}" Height="26" Padding="8,0" FontSize="12" Content="Aa" Click="SearchOption_Click" ToolTip="Match case"/>
+                            <TextBlock x:Name="SearchSummary" FontSize="12" Foreground="{DynamicResource B.Muted}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        </DockPanel>
+                    </StackPanel>
+
+                    <!-- contents -->
+                    <ListBox x:Name="OutlineList" Grid.Row="1" Style="{StaticResource PlainList}" Padding="8,0,6,12">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RowButton}" Click="OutlineRow_Click" Padding="6,7,10,7" Background="{Binding Background}">
+                                    <DockPanel>
+                                        <TextBlock DockPanel.Dock="Right" Text="{Binding PageLabel}" FontSize="12" Foreground="{DynamicResource B.Muted}" Margin="8,0,0,0"/>
+                                        <Button DockPanel.Dock="Left" Style="{StaticResource IconButton}" Width="18" Height="18" Margin="{Binding Indent}"
+                                                Visibility="{Binding ChevronVisibility}" Click="OutlineChevron_Click">
+                                            <local:IconView Data="{Binding Chevron}" Width="12" Height="12"/>
+                                        </Button>
+                                        <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" FontWeight="{Binding Weight}"
+                                                   Foreground="{Binding Foreground}" Margin="4,0,0,0"/>
+                                    </DockPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock x:Name="OutlineEmpty" Grid.Row="1" Text="This PDF has no chapters." Foreground="{DynamicResource B.Muted}" Margin="22,8" Visibility="Collapsed"/>
+
+                    <!-- bookmarks -->
+                    <DockPanel x:Name="BookmarksView" Grid.Row="1" Visibility="Collapsed" Margin="10,0,8,12">
+                        <Button x:Name="AddBookmarkButton" DockPanel.Dock="Top" Style="{StaticResource RowButton}" Click="BookmarkToggle_Click" BorderBrush="{DynamicResource B.FieldBorder}" BorderThickness="1" Margin="0,0,0,8">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="bookmark" FontSize="12" Foreground="{DynamicResource B.Muted}"/>
+                                <local:IconView DockPanel.Dock="Left" Data="M7 4h10v16l-5-4-5 4z" Width="15" Height="15" Margin="0,0,8,0" IconBrush="{DynamicResource B.Accent}"/>
+                                <TextBlock x:Name="AddBookmarkText" Text="Bookmark this page" Foreground="{DynamicResource B.Accent}" FontWeight="Medium"/>
+                            </DockPanel>
+                        </Button>
+                        <ListBox x:Name="BookmarkList" Style="{StaticResource PlainList}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource RowButton}" Click="BookmarkRow_Click" MouseDoubleClick="BookmarkRow_DoubleClick" Padding="10,8"
+                                            Background="{DynamicResource B.Card}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="1">
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Rename…" Click="BookmarkRename_Click"/>
+                                                <MenuItem Header="Delete" Click="BookmarkDelete_Click"/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                        <DockPanel>
+                                            <local:IconView DockPanel.Dock="Left" Data="M7 4h10v16l-5-4-5 4z" Width="14" Height="14" Margin="0,2,10,0" VerticalAlignment="Top" IconBrush="{DynamicResource B.Accent}"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}" FontWeight="Medium" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding PageLabel}" FontSize="11.5" Foreground="{DynamicResource B.Muted}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+
+                    <!-- markup -->
+                    <DockPanel x:Name="MarkupView" Grid.Row="1" Visibility="Collapsed" Margin="10,0,8,12">
+                        <Border DockPanel.Dock="Top" CornerRadius="9" Background="{DynamicResource B.Seg}" Padding="2" Margin="0,0,0,10">
+                            <UniformGrid Columns="4">
+                                <RadioButton x:Name="FilterAll" GroupName="mfilter" Style="{StaticResource SegButton}" Content="All" Tag="all" Checked="MarkupFilter_Checked" IsChecked="True"/>
+                                <RadioButton GroupName="mfilter" Style="{StaticResource SegButton}" Content="Highlights" Tag="marks" Checked="MarkupFilter_Checked"/>
+                                <RadioButton GroupName="mfilter" Style="{StaticResource SegButton}" Content="Notes" Tag="notes" Checked="MarkupFilter_Checked"/>
+                                <RadioButton GroupName="mfilter" Style="{StaticResource SegButton}" Content="Ink" Tag="ink" Checked="MarkupFilter_Checked"/>
+                            </UniformGrid>
+                        </Border>
+                        <Border x:Name="UnsavedBox" DockPanel.Dock="Bottom" CornerRadius="10" Background="{DynamicResource B.AccentSoft}" Padding="12,10" Margin="0,10,0,0" Visibility="Collapsed">
+                            <TextBlock Text="Unsaved changes" FontSize="12"/>
+                        </Border>
+                        <TextBlock x:Name="MarkupEmpty" DockPanel.Dock="Top" Text="No markup yet." Foreground="{DynamicResource B.Muted}" Margin="12,4" Visibility="Collapsed"/>
+                        <ListBox x:Name="MarkupList" Style="{StaticResource PlainList}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource RowButton}" Click="MarkupRow_Click" Padding="12,10"
+                                            Background="{DynamicResource B.Card}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="1">
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Delete" Click="MarkupDelete_Click"/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                        <DockPanel>
+                                            <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Fill="{Binding Swatch}" Margin="0,5,10,0" VerticalAlignment="Top"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Label}" FontSize="11.5" Foreground="{DynamicResource B.Muted}"/>
+                                                <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Margin="0,3,0,0" MaxHeight="60" TextTrimming="CharacterEllipsis"/>
+                                                <DockPanel Margin="0,6,0,0" Visibility="{Binding CommentVisibility}">
+                                                    <local:IconView DockPanel.Dock="Left" Data="M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-7l-4.5 3.5V17H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"
+                                                                    Width="13" Height="13" Margin="0,2,6,0" VerticalAlignment="Top" IconBrush="{DynamicResource B.Muted}"/>
+                                                    <TextBlock Text="{Binding Comment}" TextWrapping="Wrap" FontSize="12" MaxHeight="48" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource B.Text2}"/>
+                                                </DockPanel>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+
+                    <!-- search results -->
+                    <ListBox x:Name="SearchList" Grid.Row="1" Style="{StaticResource PlainList}" Padding="8,0,6,12" Visibility="Collapsed">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RowButton}" Click="SearchRow_Click" Padding="12,9" Background="{Binding Background}">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding PageLabel}" FontSize="11.5" Foreground="{DynamicResource B.Muted}"/>
+                                            <Border Visibility="{Binding OcrVisibility}" Background="{DynamicResource B.Seg}" CornerRadius="5" Padding="5,0" Margin="6,0,0,0">
+                                                <TextBlock Text="OCR" FontSize="11" Foreground="{DynamicResource B.Accent}"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock TextWrapping="Wrap" Margin="0,3,0,0" LineHeight="18">
+                                            <Run Text="{Binding Before, Mode=OneWay}"/><Run Text="{Binding Match, Mode=OneWay}" FontWeight="SemiBold" Background="{DynamicResource B.SearchCurrent}"/><Run Text="{Binding After, Mode=OneWay}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- ======================== right: tabs (reveals at the right edge, pinnable) -->
+            <Border x:Name="TabsPanel" Grid.Column="0" Background="{DynamicResource B.SbBg}" BorderBrush="{DynamicResource B.Hair}" BorderThickness="0,0,1,0"
+                    Padding="10,12" MouseLeave="TabsPanel_MouseLeave" Panel.ZIndex="20" Visibility="Collapsed">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Top" Margin="6,0,0,12" Height="32" LastChildFill="False">
+                        <ToggleButton x:Name="PinToggle" DockPanel.Dock="Right" Style="{StaticResource IconToggle}" Width="30" Height="30" ToolTip="Pin tabs" Click="TabsToggle_Click">
+                            <local:IconView Data="M9 4h6l-1 6 3 3H7l3-3z M12 13v7" Width="16" Height="16"/>
+                        </ToggleButton>
+                    </DockPanel>
+                    <Button DockPanel.Dock="Top" Style="{StaticResource RowButton}" Background="{DynamicResource B.Hover}" Click="Menu_Open" Padding="10,0" Height="36">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" local:Hint.Shortcut="open" FontSize="12" Foreground="{DynamicResource B.Muted}"/>
+                            <local:IconView DockPanel.Dock="Left" Data="M12 5v14 M5 12h14" Width="16" Height="16" Margin="0,0,10,0"/>
+                            <TextBlock Text="Open file" FontWeight="SemiBold"/>
+                        </DockPanel>
+                    </Button>
+                    <TextBlock DockPanel.Dock="Top" Text="OPEN TABS" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource B.Muted}" Margin="10,16,0,6"/>
+                    <ItemsControl x:Name="TabsList" DockPanel.Dock="Top">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource RowButton}" Click="TabRow_Click" Margin="0,0,0,2" Background="{Binding Background}">
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="24" Height="24" Click="TabClose_Click" ToolTip="Close tab" local:Hint.Tip="closetab">
+                                            <local:IconView Data="M7 7l10 10 M17 7L7 17" Width="12" Height="12"/>
+                                        </Button>
+                                        <local:IconView DockPanel.Dock="Left" Data="M7 3h7l5 5v13H7z M14 3v5h5" Width="16" Height="16" Margin="0,0,10,0" IconBrush="{Binding IconBrush}"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Tab.Name}" TextTrimming="CharacterEllipsis" FontWeight="{Binding Weight}"/>
+                                            <TextBlock Text="{Binding Tab.Meta}" FontSize="11.5" Foreground="{DynamicResource B.Muted}" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock DockPanel.Dock="Top" Text="RECENT" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource B.Muted}" Margin="10,16,0,6"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="RecentList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource RowButton}" Click="Recent_Click" ToolTip="{Binding Path}" Height="32" Padding="10,0">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Right" Text="{Binding When}" FontSize="11.5" Foreground="{DynamicResource B.Muted}" Margin="8,0,0,0"/>
+                                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource B.Text2}"/>
+                                        </DockPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </Border>
+
+            <!-- two touch bars on the left edge: top = contents, bottom = tabs -->
+            <Grid x:Name="EdgeBars" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Left" Width="12" Panel.ZIndex="25">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Border x:Name="ContentsBar" Grid.Row="0" Background="Transparent" ToolTip="Contents, bookmarks, markup"
+                        MouseEnter="ContentsBar_MouseEnter" MouseLeave="EdgeBar_MouseLeave">
+                    <Border x:Name="ContentsPill" Width="4" CornerRadius="2" Margin="0,14,0,7" HorizontalAlignment="Left"
+                            Background="{DynamicResource B.Edge}" Opacity="0.9"/>
+                </Border>
+                <Border x:Name="TabsBar" Grid.Row="1" Background="Transparent" ToolTip="Tabs and recent files"
+                        MouseEnter="TabsBar_MouseEnter" MouseLeave="EdgeBar_MouseLeave">
+                    <Border x:Name="TabsPill" Width="4" CornerRadius="2" Margin="0,7,0,14" HorizontalAlignment="Left"
+                            Background="{DynamicResource B.Edge}" Opacity="0.9"/>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
